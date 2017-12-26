@@ -59,12 +59,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     input_node = tf.placeholder(tf.float32, shape=(1, args.input_height, args.input_width, 3), name='image')
+    #test_writer = tf.summary.FileWriter('test/')
 
     with tf.Session() as sess:
         net, _, last_layer = get_network(args.model, input_node, sess)
 
-        cam = cv2.VideoCapture(args.camera)
-        ret_val, img = cam.read()
+        cam = cv2.VideoCapture("/home/madhawa/test_videos/leapset.mp4")
+        cam.set(cv2.CAP_PROP_POS_MSEC,85000)
+        #cam = cv2.VideoCapture(args.camera)
+        for i in range(10):
+            ret_val, img = cam.read()
         logging.info('cam image=%dx%d' % (img.shape[1], img.shape[0]))
 
         while True:
@@ -85,6 +89,7 @@ if __name__ == '__main__':
                 dy = (img_scaled.shape[0] - img.shape[0]) // 2
                 img = img_scaled[dy:img.shape[0], dx:img.shape[1]]
             preprocessed = preprocess(img, args.input_width, args.input_height)
+            cv2.imshow("preprocessed",preprocessed)
 
             logging.debug('cam process+')
             pafMat, heatMat = sess.run(
@@ -93,6 +98,7 @@ if __name__ == '__main__':
                     net.get_output(name=last_layer.format(stage=args.stage_level, aux=2))
                 ], feed_dict={'image:0': [preprocessed]}
             )
+            #test_writer.add_graph(sess.graph)
             heatMat, pafMat = heatMat[0], pafMat[0]
 
             logging.debug('cam postprocess+')
