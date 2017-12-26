@@ -220,13 +220,6 @@ def preprocess(img, width, height):
     val_image = val_image * (2.0 / 255.0) - 1.0
     return val_image
 
-import face_recognition
-madhawa_face_image = face_recognition.load_image_file("madhawa.jpeg")
-madhawa_face_encoding = face_recognition.face_encodings(madhawa_face_image)[0]
-
-imesha_face_image = face_recognition.load_image_file("imesha.png")
-imesha_face_encoding = face_recognition.face_encodings(imesha_face_image)[0]
-
 def draw_humans(img, human_list):
     img_copied = np.copy(img)
     image_h, image_w = img_copied.shape[:2]
@@ -249,37 +242,6 @@ def draw_humans(img, human_list):
             maxx = max(maxx,center[0])
             miny = min(miny,center[1])
             maxy = max(maxy,center[1])
-
-        roi = img_copied[max(0,miny-50):min(image_h,maxy+50),max(0,minx-50):min(image_w,maxx+50)]
-
-        face_locations = face_recognition.face_locations(roi, number_of_times_to_upsample=1)
-        for (top,right,bottom,left) in face_locations:
-            cv2.rectangle(roi,(left,top),(right,bottom),(0,0,255),3)
-            cv2.rectangle(img_copied, (left + max(0,minx-50), top + max(0,miny-50)), (right + max(0,minx-50), bottom + max(0,miny-50)), (0, 0, 255), 3)
-
-        unknown_face_encodings = face_recognition.face_encodings(roi, face_locations)
-        for x in range(len(unknown_face_encodings)):
-            unknown_face_encoding = unknown_face_encodings[x]
-            match = face_recognition.compare_faces([madhawa_face_encoding, imesha_face_encoding], unknown_face_encoding, tolerance=0.5)
-            names = ["madhawa","imesha"]
-            distances = face_recognition.face_distance([madhawa_face_encoding,imesha_face_encoding],unknown_face_encoding)
-            distance_names = [(distances[i],names[i]) for i in range(len(distances))]
-            distance_names = sorted(distance_names,key=lambda x: x[0])
-
-            fullname = ""
-
-            for distance,name in distance_names:
-                if distance < 0.5:
-                    fullname += name + " "
-            # if match[0]:
-            #     name += "Madhawa "
-            # if match[1]:
-            #     name += "Imesha "
-            cv2.putText(img_copied, fullname, (face_locations[x][3] + max(0,minx-50), face_locations[x][0] + + max(0,miny-50)), cv2.FONT_HERSHEY_COMPLEX, 1,
-                        (0, 255, 0))
-
-        # cv2.imshow("person_preview " + str(_i),roi)
-        _i += 1
 
         cv2.rectangle(img_copied,(minx-50,miny-50),(maxx+50,maxy+50),(255,0,0),2)
 
